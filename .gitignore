@@ -1,0 +1,8 @@
+web_admin/migrations/
+web_admin/_pycache_/
+*.pyc  
+*~  
+__pycache__  
+myvenv  
+db.sqlite3  
+/static  
