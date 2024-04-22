@@ -1,5 +1,6 @@
-# web_admin/migrations/
-# web_admin/_pycache_/
+web_admin/migrations
+web_admin/_pycache_
+broiler_app/_pycache_
 *.pyc  
 *~  
 __pycache__  
