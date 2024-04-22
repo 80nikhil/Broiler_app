@@ -1,0 +1,97 @@
+{% extends "web_adminbase.html" %}
+{% load static %}
+
+{% block body %}
+<div class="m-4">
+  <div class="card me-6 p-2" style="width: auto">
+    <h4 class="m-0 p-0">
+      Update Rate
+      <hr class="hr p-0 mt-1 me-1" />
+    </h4>
+    
+    <form action="/add-rate" method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="form-group row mt-1 d-flex justify-content-center">
+        <div class="col-sm-6">
+          <label for="pdf">Enter Rate  <span class="text-danger ml-2">*</span></label>
+          <textarea required="true" class="form-control input-lg" id="name" placeholder="Enter text" name="rate" rows="5"></textarea>
+        </div>
+      </div>
+      <div class="d-flex justify-content-center mt-2">
+        <button type="submit" class="btn btn-primary pe-4 ps-4 m-2">submit</button>
+      </div>
+    </form>
+    {% if final_rate_dic %}
+    <p class="m-4">{{ final_rate_dic }}</p>
+    {% endif %}
+    {% if new_data_list %}
+    <p class="m-4">{{ new_data_list }}</p>
+    {% endif %}
+  <table id="dataTable" class="table table-bordered text-center mt-3">
+    <thead>
+      <tr>
+        <th>Corporate</th>
+        <th>Region</th>
+        <th>Abbreviation</th>
+        <th>Price</th>
+        <th>Broiler</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  
+  <form id="submitForm">
+    <div class="d-flex justify-content-center mt-2">
+      <button type="submit" class="btn btn-success">Submit All</button>
+    </div>
+  </form>
+</div>
+</div>
+<script>
+  const data ={% autoescape off %}
+  {{ final_data }}
+{% endautoescape %}
+  const tableBody = document.querySelector('#dataTable tbody');
+
+  data.forEach((item, index) => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${item.corporate}</td>
+      <td>${item.region}</td>
+      <td>${item.abbreviation}</td>
+      <td>${item.price}</td>
+      <td>${item.broiler}</td>
+      <td><button onclick="deleteItem(${index})" class="btn btn-danger">Delete</button></td>
+    `;
+    tableBody.appendChild(row);
+  });
+
+  function deleteItem(index) {
+    data.splice(index, 1);
+    refreshTable();
+  }
+
+  function refreshTable() {
+    tableBody.innerHTML = '';
+    data.forEach((item, index) => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${item.corporate}</td>
+        <td>${item.region}</td>
+        <td>${item.abbreviation}</td>
+        <td>${item.price}</td>
+        <td>${item.broiler}</td>
+        <td><button onclick="deleteItem(${index})" class="btn btn-danger">Delete</button></td>
+      `;
+      tableBody.appendChild(row);
+    });
+  }
+
+  submitForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    console.log('Submitting data:', data);
+    // You can submit the data using fetch or another method here
+  });
+</script>
+{% endblock %}
