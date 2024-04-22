@@ -1,5 +1,5 @@
-web_admin/migrations/
-web_admin/_pycache_/
+# web_admin/migrations/
+# web_admin/_pycache_/
 *.pyc  
 *~  
 __pycache__  
