@@ -1,0 +1,8 @@
+working dir = /home/ubuntu
+database = 'broiler', 
+database_user = 'nikhil',
+database_pass = 'broiler@123',
+adminuser = broiler_admin
+admin_pass = Broiler@123
+
+

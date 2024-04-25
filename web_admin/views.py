@@ -4,6 +4,25 @@ import re
 import csv
 from  . models import *
 
+class LoginView(TemplateView):  
+    template_name = "login.html"
+    
+    def get(self, request,*args, **kwargs): 
+        try:
+            request.session['user_id']
+            return redirect('/add-rate')
+        except KeyError as e:    
+            return render(request,self.template_name)
+    
+    def post(self, request,*args, **kwargs): 
+        try:
+            user_obj = user.objects.get(user_name=request.POST.get('user_name'),password=request.POST.get('password'))
+            request.session['user_id'] = user_obj.id
+            request.session['user_name'] = user_obj.user_name
+            return redirect('/add-rate')
+        except user.DoesNotExist:
+            return render(request,self.template_name)
+
 def get_special_chars(s):
     special_chars = {',', ':', ';', '.'}
     return [char for char in s if char in special_chars]
@@ -17,6 +36,7 @@ class RateView(TemplateView):
     def post(self, request,*args, **kwargs): 
         data = request.POST.get('rate')
         final_rate_dic = {}
+        small_rate_dic ={}
         data_list = data.splitlines()
         if len(data_list) == 1:
             data_list = data.rsplit(get_special_chars(data)[0]) 
@@ -25,11 +45,12 @@ class RateView(TemplateView):
             if  re.search(r'[a-zA-Z]+', data) and re.search(r'[0-9]+', data):
                 city = ''
                 price = ''
+                small_price = ''
                 char_com = False
                 cost_com = False
                 data = data.replace('\xa0','').replace('.','').replace('-','')  
                 for char in data:
-                    if char in [' ','#']:
+                    if char in [' ','#']:      
                         if len(city) > 0:
                             char_com = True
                             if len(price)>0:
@@ -37,8 +58,10 @@ class RateView(TemplateView):
                     else:
                         try:
                             int(char)
-                            if not cost_com:
-                                price += char
+                            if char_com and cost_com:
+                                 small_price +=char
+                            elif not cost_com:
+                                price += char    
                         except:
                             if not char_com:
                                 city += char
@@ -46,16 +69,20 @@ class RateView(TemplateView):
                                 cost_com = True
                 region = broiler_region.objects.filter(region__iexact=city).last()
                 if region:                
-                    final_rate_dic[region.region] = price  
+                    final_rate_dic[region.region] = price
+                    if small_price != '': 
+                        small_rate_dic[region.region] = small_price 
                 else:
-                    final_rate_dic[city] = price       
+                    final_rate_dic[city] = price 
+                    if small_price != '':  
+                        small_rate_dic[city] = small_price       
             else:
-                if not re.search(r'[0-9]+', data) and data not in ['Today','Tomorrow','with','Regards','regards','With']:
-                    special_char = ['+',':','=','-','$','*','$','.','Today','Tomorrow']
+                if not re.search(r'[0-9]+', data) and data not in ['Today','Tomorrow']:
+                    special_char = ['+',':','=','-','$','*','$','.','Today','Tomorrow','with','Regards','regards','With']
                     for i in special_char:
                         data = data.replace(i,'')
                     try:
-                        ctype_data_obj = ctype_data.objects.filter(alias_name__icontains=data).last().id    
+                        ctype_data_obj = ctype_data.objects.filter(alias_name__icontains=data.strip()).last().id    
                         new_data_list.append(ctype_data_obj)
                     except:
                         pass       
@@ -69,7 +96,15 @@ class RateView(TemplateView):
             final_data['abbreviation'] = key
             final_data['price'] = value
             final_data['broiler'] = 'Mota' 
-            final_list.append(final_data)       
+            final_list.append(final_data)   
+        for key,value in small_rate_dic.items():
+            final_data={}
+            final_data['corporate'] =  ctype_data_list.title if ctype_data_list else ""
+            final_data['region'] = key
+            final_data['abbreviation'] = key
+            final_data['price'] = value
+            final_data['broiler'] = 'Small' 
+            final_list.append(final_data)          
         context = {'final_rate_dic':final_rate_dic,'new_data_list':new_data_list,'final_data':final_list}                                       
         return render(request,self.template_name,context)
 
@@ -143,4 +178,9 @@ class RegionAliasView(TemplateView):
             new_alias.append(request.POST.get('alias'))
             state.alias_name = new_alias     
         state.save()                   
-        return redirect('/add-state-alias')     
+        return redirect('/add-state-alias') 
+    
+class Logout(TemplateView):
+    def get(self,request,*args, **kwargs):
+        del request.session['user_id']   
+        return redirect('/')         

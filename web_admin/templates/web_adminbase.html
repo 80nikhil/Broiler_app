@@ -149,20 +149,23 @@
     <!-- Sidebar -->
     <div id="sidebar">
       <header>
-        <a href="#">request.session.name</a>
+        <a href="#">{{request.session.user_name}}</a>
       </header>
       <ul class="nav">
         <li>
           <a href="/add-rate"><i class="fa-solid fa-table"></i>Update Rate</a>
         </li>
         <li>
-          <a href="/add-corporate-alias"><i class="fa-solid fa-table"></i>Corporate Alias</a>
+          <a href="/add-state-alias"><i class="fa-solid fa-table"></i>Add State Alias</a>
         </li>
         <li>
-          <a href="/add-state-alias"><i class="fa-solid fa-table"></i>State Alias</a>
+          <a href="/region-alias"><i class="fa-solid fa-table"></i>Add Region Alias</a>
         </li>
         <li>
-          <a href="/region-alias"><i class="fa-solid fa-table"></i>Region Alias</a>
+          <a href="/add-corporate-alias"><i class="fa-solid fa-table"></i>Add Corporate Alias</a>
+        </li>
+        <li>
+          <a href="/logout"><i class="fa-solid fa-table"></i>Logout</a>
         </li>
       </ul>
     </div>
@@ -173,7 +176,7 @@
           <i class="fa fa-bars" id="drawer_btn" onclick="openCloseNav()"></i>
           <h class="ms-auto" href="#">
             <i class="fa fa-user ms-2 me-2"></i
-            >Hello,{{request.session.name}}</h
+            >Hello,{{request.session.user_name}}</h
           >
         </div>
       </div>
