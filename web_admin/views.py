@@ -1,8 +1,14 @@
 from django.shortcuts import render,redirect
 from django.views.generic.base import TemplateView
+from rest_framework.views import APIView
+from rest_framework import status
+from rest_framework.response import Response
 import re
 import csv
-from  . models import *
+from datetime import datetime as dt 
+from  .models import *
+import requests
+import json
 
 class LoginView(TemplateView):  
     template_name = "login.html"
@@ -78,7 +84,9 @@ class RateView(TemplateView):
                         small_rate_dic[city] = small_price       
             else:
                 if not re.search(r'[0-9]+', data) and data not in ['Today','Tomorrow']:
-                    special_char = ['+',':','=','-','$','*','$','.','Today','Tomorrow','with','Regards','regards','With']
+                    special_char = ['+',':','=','-','$','*','$','.','Today','Tomorrow',
+                                    'with','Regards','regards','With','Chicken','Paper','Rate',
+                                    'final','rate']
                     for i in special_char:
                         data = data.replace(i,'')
                     try:
@@ -116,6 +124,7 @@ class CorporateAliasView(TemplateView):
         for obj in list:
             if obj.alias_name:
                 obj.alias_name = ', '.join(x for x in obj.alias_name)
+                obj.h_abbreviation = ','.join(broiler_region.objects.filter(ctype=obj).values_list('region',flat=True))
         context = {'list': list}
         return render(request,self.template_name,context)
   
@@ -179,6 +188,34 @@ class RegionAliasView(TemplateView):
             state.alias_name = new_alias     
         state.save()                   
         return redirect('/add-state-alias') 
+    
+class Get_Rate_List(APIView):
+    def post(self,request,*args, **kwargs):
+        response_data_list = []
+        date_str = request.data['date']
+        date_obj = dt.strptime(date_str, '%Y-%m-%d')
+        formatted_date = date_obj.strftime('%Y-%m-%d %H:%M:%S')
+        for obj in json.loads(request.data['data']):
+            ctype_data_obj = ctype_data.objects.filter(title=obj['corporate']).first()
+            region_obj = broiler_region.objects.get(region=obj['region'],ctype__title=obj['corporate'])
+            url='https://eggchi.com/uploads/images/add_rate.php'
+            payload = {
+                "regionid":int(region_obj.id),
+                "rate":float(obj['price']),
+                "pfix":'',
+                "ratetype":'broiler',
+                "createdate": formatted_date,
+                "createday": formatted_date,
+                "fixrate":0,
+                "filestamp":0,
+            }
+            # headers = { 'Content-Type': 'application/json'}
+            headers = {}
+            response_data = requests.post(url, headers=headers, data=payload,verify=False)
+            print("Request completed in {0:.0f} seconds".format(response_data.elapsed.total_seconds()))
+            if response_data.json()['status'] == True:
+               response_data_list.append(obj) 
+        return Response({'message':'Record Inserted Succesfully','data':response_data},status=status.HTTP_200_OK)    
     
 class Logout(TemplateView):
     def get(self,request,*args, **kwargs):

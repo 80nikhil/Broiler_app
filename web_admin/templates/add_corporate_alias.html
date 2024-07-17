@@ -33,11 +33,18 @@
               value="{{corporate.id}}"
               data-tokens="{{corporate.title}}"
               data-alias="{{corporate.alias_name}}"
+              data-region="{{corporate.h_abbreviation}}"
             >
               {{corporate.title}}
             </option>
             {% endfor %}
           </select>
+        </div>
+      </div>
+      <div class="form-group row mt-3">
+        <label for="" class="col-sm-2 form-control-label">Region Name</label>
+        <div class="col-sm-10">
+          <input type="text" id="region-textbox" class="form-control" readonly />
         </div>
       </div>
       <div class="form-group row mt-3">
@@ -100,6 +107,7 @@
   var originalOptions = Array.from(select.options);
   // Get the alias textbox
   var aliasTextbox = document.getElementById("alias-textbox");
+  var regionTextbox = document.getElementById("region-textbox");
 
   // Add an event listener to the select element
   select.addEventListener("change", function () {
@@ -107,8 +115,10 @@
     var selectedOption = this.options[this.selectedIndex];
     // Get the alias value from the selected option
     var aliasValue = selectedOption.getAttribute("data-alias");
+    var regionValue = selectedOption.getAttribute("data-region");
     // Update the alias textbox value
     aliasTextbox.value = aliasValue;
+    regionTextbox.value = regionValue;
   });
 
   // Add an event listener to the input field of the selectpicker
