@@ -7,3 +7,6 @@ __pycache__
 myvenv  
 db.sqlite3  
 /static   
+media
+broiler_app/settings.py
+broiler_app/wsgi.py
