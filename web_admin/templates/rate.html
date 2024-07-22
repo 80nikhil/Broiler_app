@@ -27,12 +27,6 @@
         <button type="submit" class="btn btn-primary pe-4 ps-4 m-2">submit</button>
       </div>
     </form>
-    {% comment %} {% if final_rate_dic %}
-    <p class="m-4">{{ final_rate_dic }}</p>
-    {% endif %}
-    {% if new_data_list %}
-    <p class="m-4">{{ new_data_list }}</p>
-    {% endif %} {% endcomment %}
   <table id="dataTable" class="table table-bordered text-center mt-3">
     <thead>
       <tr>
@@ -92,7 +86,7 @@
       `;
       tableBody.appendChild(row);
     });
-  }
+}
 
   submitForm.addEventListener('submit', (event) => {
     event.preventDefault();
@@ -100,29 +94,36 @@
     console.log('Submitting data:', data);
     // Send the data to your backend using fetch
     const request_data = {
-      'date':dateValue,
-      'data':JSON.stringify(data)
-    }
-    fetch('http://127.0.0.1:8000/get-rate-list', {
+      'date': dateValue,
+      'data': JSON.stringify(data)
+    };
+
+    fetch(`${window.location.origin}/get-rate-list`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(request_data)
     })
-    .then(response => response.json())
-    .then(data => {
-      console.log('Response:', data);
-      if (response.status === 200) {
-        window.location.href = 'http://127.0.0.1:8000/add-rate';
-      }else{
-        alert("Failed to feed rates")
+    .then(response => {
+      console.log('Response status:', response.status);
+      if (response.status == 200) {
+        data.splice(0, data.length);
+        refreshTable();
+      } else {
+        throw new Error("Failed to feed rates");
       }
-      // Handle the response here, such as updating the UI
+    })
+    .then(data => {
+      console.log('Response data:', data);
+      data = [];
+      console.log(data);
+      refreshTable();
     })
     .catch(error => {
       console.error('Error:', error);
     });
   });
+
 </script>
 {% endblock %}
