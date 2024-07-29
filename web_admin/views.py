@@ -3,6 +3,7 @@ from django.views.generic.base import TemplateView
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
+from django.db.models import Q
 import re
 import csv
 from datetime import datetime as dt 
@@ -73,11 +74,11 @@ class RateView(TemplateView):
                                 city += char
                             elif len(price)>0:
                                 cost_com = True
-                region = broiler_region.objects.filter(region__iexact=city).last()
+                region = broiler_region.objects.filter(Q(region__iexact=city)|Q(alias_name__icontains=city)|Q(abbreviation=city)).last()
                 if region:                
-                    final_rate_dic[region.region] = price
+                    final_rate_dic[region.id] = price
                     if small_price != '': 
-                        small_rate_dic[region.region] = small_price 
+                        small_rate_dic[region.id] = small_price         
                 else:
                     final_rate_dic[city + "(Not Available)"] = price 
                     if small_price != '':  
@@ -99,14 +100,27 @@ class RateView(TemplateView):
         final_list=[]
         for key,value in final_rate_dic.items():
             final_data={}
+            try:
+                int(key)
+                region_obj = broiler_region.objects.get(id=key)
+                key = region_obj.region
+                final_data['abbreviation'] = region_obj.abbreviation
+            except:
+                final_data['abbreviation'] = key    
             final_data['corporate'] =  ctype_data_list.title if ctype_data_list else ""
             final_data['region'] = key
-            final_data['abbreviation'] = key
             final_data['price'] = value
             final_data['broiler'] = 'Mota' 
             final_list.append(final_data)   
         for key,value in small_rate_dic.items():
             final_data={}
+            try:
+                int(key)
+                region_obj = broiler_region.objects.get(id=key)
+                key = region_obj.region
+                final_data['abbreviation'] = region_obj.abbreviation
+            except:
+                final_data['abbreviation'] = key  
             final_data['corporate'] =  ctype_data_list.title if ctype_data_list else ""
             final_data['region'] = key
             final_data['abbreviation'] = key
@@ -145,7 +159,7 @@ class StateAliasView(TemplateView):
     template_name = "add_state_alias.html"
     model = state_data
     def get(self, request,*args, **kwargs): 
-        list = self.model.objects.all().order_by('id')
+        list = self.model.objects.all().order_by('state')
         for obj in list:
             if obj.alias_name:
                 obj.alias_name = ', '.join(x for x in obj.alias_name)
@@ -187,7 +201,7 @@ class RegionAliasView(TemplateView):
             new_alias.append(request.POST.get('alias'))
             state.alias_name = new_alias     
         state.save()                   
-        return redirect('/add-state-alias') 
+        return redirect('/region-alias') 
     
 class Get_Rate_List(APIView):
     def post(self,request,*args, **kwargs):
@@ -197,24 +211,29 @@ class Get_Rate_List(APIView):
         formatted_date = date_obj.strftime('%Y-%m-%d %H:%M:%S')
         for obj in json.loads(request.data['data']):
             if not "Not Available" in obj['region']:
-                region_obj = broiler_region.objects.get(region=obj['region'],ctype__title=obj['corporate'])
-                url='https://eggchi.com/uploads/images/add_rate.php'
-                payload = {
-                    "regionid":int(region_obj.id),
-                    "rate":float(obj['price']),
-                    "pfix":'',
-                    "ratetype":'broiler',
-                    "createdate": formatted_date,
-                    "createday": formatted_date,
-                    "fixrate":0,
-                    "filestamp":0,
-                }
-                # headers = { 'Content-Type': 'application/json'}
-                headers = {}
-                response_data = requests.post(url, headers=headers, data=payload,verify=False)
-                print("Request completed in {0:.0f} seconds".format(response_data.elapsed.total_seconds()))
-                if response_data.json()['status'] == True:
-                   response_data_list.append(obj) 
+                try:
+                    region_obj = broiler_region.objects.get(region=obj['region'],abbreviation=obj['abbreviation'])
+                except broiler_region.DoesNotExist:
+                    region_obj = broiler_region.objects.filter(alias_name__icontains=obj['region'],abbreviation=obj['abbreviation']).last()   
+                if region_obj:
+                    # url='https://eggchi.com/uploads/images/add_rate.php'
+                    # payload = {
+                    #     "regionid":int(region_obj.id),
+                    #     "rate":float(obj['price']),
+                    #     "pfix":'',
+                    #     "ratetype":'broiler',
+                    #     "createdate": formatted_date,
+                    #     "createday": formatted_date,
+                    #     "fixrate":0,
+                    #     "filestamp":0,
+                    # }
+                    # # headers = { 'Content-Type': 'application/json'}
+                    # headers = {}
+                    # response_data = requests.post(url, headers=headers, data=payload,verify=False)
+                    # print("Request completed in {0:.0f} seconds".format(response_data.elapsed.total_seconds()))
+                    # if response_data.json()['status'] == True:
+                    #     response_data_list.append(obj) 
+                    response_data = []
         return Response({'message':'Record Inserted Succesfully','data':response_data},status=status.HTTP_200_OK)    
     
 class Logout(TemplateView):
