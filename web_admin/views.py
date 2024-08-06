@@ -216,24 +216,23 @@ class Get_Rate_List(APIView):
                 except broiler_region.DoesNotExist:
                     region_obj = broiler_region.objects.filter(alias_name__icontains=obj['region'],abbreviation=obj['abbreviation']).last()   
                 if region_obj:
-                    # url='https://eggchi.com/uploads/images/add_rate.php'
-                    # payload = {
-                    #     "regionid":int(region_obj.id),
-                    #     "rate":float(obj['price']),
-                    #     "pfix":'',
-                    #     "ratetype":'broiler',
-                    #     "createdate": formatted_date,
-                    #     "createday": formatted_date,
-                    #     "fixrate":0,
-                    #     "filestamp":0,
-                    # }
-                    # # headers = { 'Content-Type': 'application/json'}
-                    # headers = {}
-                    # response_data = requests.post(url, headers=headers, data=payload,verify=False)
-                    # print("Request completed in {0:.0f} seconds".format(response_data.elapsed.total_seconds()))
-                    # if response_data.json()['status'] == True:
-                    #     response_data_list.append(obj) 
-                    response_data = []
+                    url='https://eggchi.com/uploads/images/add_rate.php'
+                    payload = {
+                        "regionid":int(region_obj.id),
+                        "rate":float(obj['price']),
+                        "pfix":'',
+                        "ratetype":'broiler',
+                        "createdate": formatted_date,
+                        "createday": formatted_date,
+                        "fixrate":0,
+                        "filestamp":0,
+                    }
+                    # headers = { 'Content-Type': 'application/json'}
+                    headers = {}
+                    response_data = requests.post(url, headers=headers, data=payload,verify=False)
+                    print("Request completed in {0:.0f} seconds".format(response_data.elapsed.total_seconds()))
+                    if response_data.json()['status'] == True:
+                        response_data_list.append(obj) 
         return Response({'message':'Record Inserted Succesfully','data':response_data},status=status.HTTP_200_OK)    
     
 class Logout(TemplateView):
