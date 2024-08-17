@@ -211,9 +211,10 @@ class Get_Rate_List(APIView):
         formatted_date = date_obj.strftime('%Y-%m-%d %H:%M:%S')
         for obj in json.loads(request.data['data']):
             if not "Not Available" in obj['region']:
-                try:
-                    region_obj = broiler_region.objects.get(region=obj['region'],abbreviation=obj['abbreviation'])
-                except broiler_region.DoesNotExist:
+                region_obj = broiler_region.objects.filter(region=obj['region'],abbreviation=obj['abbreviation'])
+                if region_obj.exists():
+                    region_obj = region_obj.last()
+                else: 
                     region_obj = broiler_region.objects.filter(alias_name__icontains=obj['region'],abbreviation=obj['abbreviation']).last()   
                 if region_obj:
                     url='https://eggchi.com/uploads/images/add_rate.php'
