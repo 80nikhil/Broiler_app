@@ -45,6 +45,10 @@ class RateView(TemplateView):
         final_rate_dic = {}
         small_rate_dic ={}
         data_list = data.splitlines()
+        if '; ' in data:
+            data_list = data.split('; ')
+        elif  ', ' in data:  
+            data_list = data.split(', ')  
         if len(data_list) == 1:
             data_list = data.rsplit(get_special_chars(data)[0]) 
         new_data_list = []
