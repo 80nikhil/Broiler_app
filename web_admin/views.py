@@ -31,7 +31,7 @@ class LoginView(TemplateView):
             return render(request,self.template_name)
 
 def get_special_chars(s):
-    special_chars = {',', ':', ';', '.'}
+    special_chars = {',',';'}
     return [char for char in s if char in special_chars]
        
 class RateView(TemplateView):  
@@ -45,12 +45,10 @@ class RateView(TemplateView):
         final_rate_dic = {}
         small_rate_dic ={}
         data_list = data.splitlines()
-        if '; ' in data:
-            data_list = data.split('; ')
-        elif  ', ' in data:  
-            data_list = data.split(', ')  
-        if len(data_list) == 1:
-            data_list = data.rsplit(get_special_chars(data)[0]) 
+        if get_special_chars(data) and len(data_list) < 3:
+            data_list = data.rsplit(get_special_chars(data)[0])   
+            data_list.insert(1,data.splitlines()[0])  
+            data_list[1] =  data_list[1].replace(data_list[0],'')
         new_data_list = []
         for data in data_list:
             if  re.search(r'[a-zA-Z]+', data) and re.search(r'[0-9]+', data):
