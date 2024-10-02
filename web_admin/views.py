@@ -46,7 +46,10 @@ class RateView(TemplateView):
         small_rate_dic ={}
         data_list = data.splitlines()
         if get_special_chars(data) and len(data_list) < 3:
-            data_list = data.rsplit(get_special_chars(data)[0])   
+            if len(data_list) > 1:
+                data_list = data_list[-1].rsplit(get_special_chars(data)[0]) 
+            else:    
+                data_list = data.rsplit(get_special_chars(data)[0])   
             data_list.insert(1,data.splitlines()[0])  
             data_list[1] =  data_list[1].replace(data_list[0],'')
         new_data_list = []
@@ -213,7 +216,8 @@ class Get_Rate_List(APIView):
         formatted_date = date_obj.strftime('%Y-%m-%d %H:%M:%S')
         for obj in json.loads(request.data['data']):
             if not "Not Available" in obj['region']:
-                region_obj = broiler_region.objects.filter(region=obj['region'],abbreviation=obj['abbreviation'])
+                ctype = ctype_data.objects.filter(title=obj['corporate']).last()
+                region_obj = broiler_region.objects.filter(ctype=ctype,region=obj['region'],abbreviation=obj['abbreviation'])
                 if region_obj.exists():
                     region_obj = region_obj.last()
                 else: 
