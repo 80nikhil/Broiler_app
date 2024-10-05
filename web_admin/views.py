@@ -93,8 +93,8 @@ class RateView(TemplateView):
                     special_char = ['+',':','=','-','$','*','$','.','Today','Tomorrow',
                                     'with','Regards','regards','With','Chicken','Paper','Rate',
                                     'final','rate']
-                    for i in special_char:
-                        data = data.replace(i,'')
+                    # for i in special_char:
+                    #     data = data.replace(i,'')
                     try:
                         ctype_data_obj = ctype_data.objects.filter(alias_name__icontains=data.strip()).last().id    
                         new_data_list.append(ctype_data_obj)
@@ -109,7 +109,7 @@ class RateView(TemplateView):
                 int(key)
                 region_obj = broiler_region.objects.get(id=key)
                 key = region_obj.region
-                final_data['abbreviation'] = region_obj.abbreviation
+                final_data['abbreviation'] = region_obj.abbreviation or ''
             except:
                 final_data['abbreviation'] = key    
             final_data['corporate'] =  ctype_data_list.title if ctype_data_list else ""
@@ -123,7 +123,7 @@ class RateView(TemplateView):
                 int(key)
                 region_obj = broiler_region.objects.get(id=key)
                 key = region_obj.region
-                final_data['abbreviation'] = region_obj.abbreviation
+                final_data['abbreviation'] = region_obj.abbreviation or ''
             except:
                 final_data['abbreviation'] = key  
             final_data['corporate'] =  ctype_data_list.title if ctype_data_list else ""
