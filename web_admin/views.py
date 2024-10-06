@@ -217,11 +217,11 @@ class Get_Rate_List(APIView):
         for obj in json.loads(request.data['data']):
             if not "Not Available" in obj['region']:
                 ctype = ctype_data.objects.filter(title=obj['corporate']).last()
-                region_obj = broiler_region.objects.filter(ctype=ctype,region=obj['region'],abbreviation=obj['abbreviation'])
+                region_obj = broiler_region.objects.filter(Q(region=obj['region'])|Q(abbreviation=obj['abbreviation']),ctype=ctype)
                 if region_obj.exists():
                     region_obj = region_obj.last()
                 else: 
-                    region_obj = broiler_region.objects.filter(alias_name__icontains=obj['region'],abbreviation=obj['abbreviation']).last()   
+                    region_obj = broiler_region.objects.filter(Q(alias_name__icontains=obj['region'])|Q(region=obj['region'])|Q(abbreviation=obj['abbreviation']),abbreviation=obj['abbreviation']).last()   
                 if region_obj:
                     url='https://eggchi.com/uploads/images/add_rate.php'
                     payload = {
